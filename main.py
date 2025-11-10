@@ -13,6 +13,16 @@ SOUNDCLOUD_USERS = [
     "https://feeds.soundcloud.com/users/soundcloud:users:1153776793/sounds.rss",
     "https://feeds.soundcloud.com/users/soundcloud:users:1122731785/sounds.rss",
     "https://feeds.soundcloud.com/users/soundcloud:users:523819995/sounds.rss",
+    "https://feeds.soundcloud.com/users/soundcloud:users:1200417373/sounds.rss",
+    "https://feeds.soundcloud.com/users/soundcloud:users:1478512195/sounds.rss",
+    "https://feeds.soundcloud.com/users/soundcloud:users:1221437284/sounds.rss",
+    "https://feeds.soundcloud.com/users/soundcloud:users:1522578684/sounds.rss",
+    "https://feeds.soundcloud.com/users/soundcloud:users:1221718432/sounds.rss",
+    "https://feeds.soundcloud.com/users/soundcloud:users:1353863904/sounds.rss",
+    "https://feeds.soundcloud.com/users/soundcloud:users:1014983476/sounds.rss",
+   # "https://feeds.soundcloud.com/users/soundcloud:users:/sounds.rss",
+    #"https://feeds.soundcloud.com/users/soundcloud:users:/sounds.rss",
+   # "https://feeds.soundcloud.com/users/soundcloud:users:/sounds.rss",
 ]
 
 SOUNDCLOUD_WEBHOOK = os.environ.get("HEYOEEFSDFS")
