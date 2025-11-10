@@ -94,11 +94,15 @@ app = Flask(__name__)
 def home():
     return jsonify({"status": "ok"}), 200  # 200 OK for UptimeRobot
 
+@app.route("/healthz")
+def healthz():
+    return jsonify({"status": "ok"}), 200  # 200 OK for Render health check
+
 @app.route("/send")
 def send_all():
     notify_all_feeds()
     return jsonify({"status": "sent"}), 200
-
+    
 # =====================
 # RUN
 # =====================
