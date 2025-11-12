@@ -26,6 +26,7 @@ SOUNDCLOUD_USERS = [
 ]
 
 SOUNDCLOUD_WEBHOOK = os.environ.get("HEYOEEFSDFS")
+UPTIMEROBOT_API_KEY = os.environ.get("UPTIMEROBOT_API_KEY")
 PORT = int(os.environ.get("PORT", 8080))
 
 # =====================
@@ -104,34 +105,48 @@ def home():
       <p style="margin-top:20px;font-size:14px;color:#999;">
          Powered by <a href="https://uptimerobot.com" target="_blank" rel="noopener noreferrer">UptimeRobot</a>
       </p>
+       <p style="color:#666;">View status page in website:</p>
+      <a href="https://fuckass-music-notifier.onrender.com/status" target="_blank"
+         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
+                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+         🌐 View Live Status in Website
+      </a>
     </div>
     """
     return html, 200, {"Content-Type": "text/html"}
 
 @app.route("/status")
-def status_page():
-    api_key = os.environ.get("UPTIMEROBOT_API_KEY")
-    if not api_key:
-        return "Missing API key", 500
+def uptime_status():
+    if not UPTIMEROBOT_API_KEY:
+        return "<h3 style='color:red;text-align:center;'>❌ Missing UPTIMEROBOT_API_KEY in environment</h3>", 500
 
     try:
-        res = requests.post(
+        response = requests.post(
             "https://api.uptimerobot.com/v2/getMonitors",
-            data={"api_key": api_key, "format": "json"}
+            data={"api_key": UPTIMEROBOT_API_KEY, "format": "json"},
+            timeout=5
         ).json()
-        monitor = res["monitors"][0]
-        status = "🟢 Online" if monitor["status"] == 2 else "🔴 Down"
-    except Exception as e:
-        status = f"⚠️ Error: {e}"
 
-    html = f"""
-    <div style="font-family:sans-serif;text-align:center;margin-top:50px;">
-      <h2>Server Status</h2>
-      <p style="font-size:24px;">{status}</p>
-      <p><a href="https://stats.uptimerobot.com/T2er9KoWTg/801768071" target="_blank">View detailed uptime</a></p>
-    </div>
-    """
-    return html, 200, {"Content-Type": "text/html"}
+        monitor = response["monitors"][0]
+        name = monitor["friendly_name"]
+        status = monitor["status"]
+        uptime = monitor.get("all_time_uptime_ratio", "N/A")
+
+        status_text = "🟢 Online" if status == 2 else "🔴 Down"
+        color = "#4caf50" if status == 2 else "#f44336"
+
+        html = f"""
+        <div style="font-family:sans-serif;text-align:center;margin-top:50px;">
+            <h2>{name} — Status</h2>
+            <p style="font-size:24px;color:{color};">{status_text}</p>
+            <p>All-time uptime: <b>{uptime}%</b></p>
+            <p><a href="https://stats.uptimerobot.com/T2er9KoWTg/801768071" target="_blank">
+               View detailed uptime →</a></p>
+        </div>
+        """
+        return html, 200, {"Content-Type": "text/html"}
+    except Exception as e:
+        return f"<h3>⚠️ Error fetching UptimeRobot data: {e}</h3>", 500
 
 @app.route("/healthz")
 def healthz():
