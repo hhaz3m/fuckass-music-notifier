@@ -93,17 +93,42 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     html = """
-    <div style="max-width: 800px; margin: auto; text-align: center;">
-      <h2 style="font-family: sans-serif;">Server Uptime Monitor</h2>
-      <iframe
-        src="https://stats.uptimerobot.com/T2er9KoWTg/801768071"
-        width="100%"
-        height="600"
-        style="border: none; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.1);">
-      </iframe>
-      <p style="font-family: sans-serif; font-size: 14px; color: #666;">
-        Powered by <a href="https://uptimerobot.com" target="_blank" rel="noopener noreferrer">UptimeRobot</a>
+    <div style="max-width:600px;margin:auto;text-align:center;font-family:sans-serif;">
+      <h2>Server Uptime Monitor</h2>
+      <p style="color:#666;">View real-time uptime stats here:</p>
+      <a href="https://stats.uptimerobot.com/T2er9KoWTg/801768071" target="_blank"
+         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
+                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+         🔗 View Live Status
+      </a>
+      <p style="margin-top:20px;font-size:14px;color:#999;">
+         Powered by <a href="https://uptimerobot.com" target="_blank" rel="noopener noreferrer">UptimeRobot</a>
       </p>
+    </div>
+    """
+    return html, 200, {"Content-Type": "text/html"}
+
+@app.route("/status")
+def status_page():
+    api_key = os.environ.get("UPTIMEROBOT_API_KEY")
+    if not api_key:
+        return "Missing API key", 500
+
+    try:
+        res = requests.post(
+            "https://api.uptimerobot.com/v2/getMonitors",
+            data={"api_key": api_key, "format": "json"}
+        ).json()
+        monitor = res["monitors"][0]
+        status = "🟢 Online" if monitor["status"] == 2 else "🔴 Down"
+    except Exception as e:
+        status = f"⚠️ Error: {e}"
+
+    html = f"""
+    <div style="font-family:sans-serif;text-align:center;margin-top:50px;">
+      <h2>Server Status</h2>
+      <p style="font-size:24px;">{status}</p>
+      <p><a href="https://stats.uptimerobot.com/T2er9KoWTg/801768071" target="_blank">View detailed uptime</a></p>
     </div>
     """
     return html, 200, {"Content-Type": "text/html"}
