@@ -92,7 +92,21 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return jsonify({"status": "ok"}), 200  # 200 OK for UptimeRobot
+    html = """
+    <div style="max-width: 800px; margin: auto; text-align: center;">
+      <h2 style="font-family: sans-serif;">Server Uptime Monitor</h2>
+      <iframe
+        src="https://stats.uptimerobot.com/T2er9KoWTg/801768071"
+        width="100%"
+        height="600"
+        style="border: none; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.1);">
+      </iframe>
+      <p style="font-family: sans-serif; font-size: 14px; color: #666;">
+        Powered by <a href="https://uptimerobot.com" target="_blank" rel="noopener noreferrer">UptimeRobot</a>
+      </p>
+    </div>
+    """
+    return html, 200, {"Content-Type": "text/html"}
 
 @app.route("/healthz")
 def healthz():
