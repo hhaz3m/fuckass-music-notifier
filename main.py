@@ -127,13 +127,12 @@ def home():
       </a>
     </div>
     """
-    return html, 200, {"Content-Type": "text/html"}
+    return html, 200, {"Content-Type": "text/html; charset=utf-8"}
 
 @app.route("/status")
 def uptime_status():
     if not UPTIMEROBOT_API_KEY:
-        return "<h3 style='color:red;text-align:center;'>❌ Missing UPTIMEROBOT_API_KEY in environment</h3>", 500
-
+        return "<h3 style='color:red;text-align:center;'>❌ Missing UPTIMEROBOT_API_KEY in environment</h3>", 500, {"Content-Type": "text/html; charset=utf-8"}
     try:
         response = requests.post(
             "https://api.uptimerobot.com/v2/getMonitors",
@@ -156,9 +155,9 @@ def uptime_status():
             <p>All-time uptime: <b>{uptime}%</b></p>
         </div>
         """
-        return html, 200, {"Content-Type": "text/html"}
+        return html, 200, {"Content-Type": "text/html; charset=utf-8"}
     except Exception as e:
-        return f"<h3>⚠️ Error fetching UptimeRobot data: {e}</h3>", 500
+        return f"<h3>⚠️ Error fetching UptimeRobot data: {e}</h3>", 500, {"Content-Type": "text/html; charset=utf-8"}
 
 @app.route("/healthz")
 def healthz():
