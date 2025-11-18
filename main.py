@@ -161,7 +161,7 @@ def uptime_status():
 
 @app.route("/healthz")
 def healthz():
-    return jsonify({"status": "ok"}), 200
+    return jsonify({"status": "notFound"}), 404
 
 @app.route("/send")
 def send_all():
