@@ -123,7 +123,22 @@ def home():
       <a href="https://stats.uptimerobot.com/T2er9KoWTg/801768071" target="_blank"
          style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
                 border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
-         🔗 View Live Status
+         🔗 View Live Status (Uptime Robot)
+      </a>
+      <a href="https://m0sxgqql.status.cron-job.org" target="_blank"
+         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
+                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+         🔗 View Live Status (Cron Job)
+      </a>
+      <a href="https://fuckass-music-notifier.betteruptime.com" target="_blank"
+         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
+                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+         🔗 View Live Status (Better Stack)
+      </a>
+      <a href="https://fuckass-music-notifier.onrender.com/status" target="_blank"
+         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
+                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+         🔗 Go To Status Page
       </a>
     </div>
     """
@@ -153,6 +168,8 @@ def uptime_status():
             <h2>{name} — Status</h2>
             <p style="font-size:24px;color:{color};">{status_text}</p>
             <p>All-time uptime: <b>{uptime}%</b></p>
+            <iframe src="https://fuckass-music-notifier.betteruptime.com/badge?theme=dark" width="250" height="30" frameborder="0" scrolling="no" style="color-scheme: normal"></iframe>
+            <iframe src="https://fuckass-music-notifier.betteruptime.com" width="1000" height="800"></iframe>
         </div>
         """
         return html, 200, {"Content-Type": "text/html; charset=utf-8"}
