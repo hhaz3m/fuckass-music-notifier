@@ -69,7 +69,7 @@ def get_latest_track(feed_url):
 
 def send_discord(track):
     payload = {
-        "content": "{track['artist']} — {track['title']} @everyone",
+        "content": f"{track['artist']} — {track['title']} @everyone",
         "embeds": [{
             "title": track["title"],
             "url": track["link"],
