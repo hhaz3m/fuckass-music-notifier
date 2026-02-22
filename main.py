@@ -23,6 +23,7 @@ SOUNDCLOUD_USERS = [
 ]
 
 SOUNDCLOUD_WEBHOOK = os.environ.get("HEYOEEFSDFS")
+YT_WEBHOOK = os.environ.get("OHOHA")
 UPTIMEROBOT_API_KEY = os.environ.get("UPTIMEROBOT_API_KEY")
 PORT = int(os.environ.get("PORT", 8080))
 CACHE_FILE = "last_sent.json"
