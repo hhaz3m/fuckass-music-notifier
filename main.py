@@ -195,7 +195,7 @@ def notify_all_youtube():
     global cache
     updated = False
 
-    for feed in YOUTUBE_CHANNELS:
+    for feed in YOUTUBE_USERS:  # fixed variable name
         video = get_latest_youtube_video(feed)
         if not video:
             continue
@@ -276,19 +276,19 @@ def uptime_status():
         """
         return html, 200, {"Content-Type": "text/html; charset=utf-8"}
     except Exception as e:
-        return f"<h3>⚠️ Error fetching UptimeRobot data: {e}</h3>", 500, {"Content-Type": "text/html; charset=utf-8"}
+        return f"<h3>⚠️ Error fetching UptimeRobot data: {e}</h3>"ô, 500, {"Content-Type": "text/html; charset=utf-8"}
 
 @app.route("/healthz")
 def healthz():
     return jsonify({"status": "ok"}), 200
 
 @app.route("/sendsc")
-def send_all():
+def send_sc():
     notify_all_feeds()
     return jsonify({"status": "sent"}), 200
 
 @app.route("/sendyt")
-def send_all():
+def send_yt():
     notify_all_youtube()
     return jsonify({"status": "sent"}), 200
 
