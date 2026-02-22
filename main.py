@@ -7,19 +7,19 @@ from flask import Flask, jsonify
 # CONFIG
 # =====================
 SOUNDCLOUD_USERS = [
-    "https://feeds.soundcloud.com/users/soundcloud:users:871836190/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:277600140/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:671246480/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1153776793/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1122731785/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:523819995/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1200417373/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1478512195/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1221437284/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1522578684/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1221718432/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1353863904/sounds.rss",
-    "https://feeds.soundcloud.com/users/soundcloud:users:1014983476/sounds.rss",
+    "https://feeds.soundcloud.com/users/soundcloud:users:871836190/sounds.rss", # asteria
+    "https://feeds.soundcloud.com/users/soundcloud:users:277600140/sounds.rss", # lytra
+    "https://feeds.soundcloud.com/users/soundcloud:users:671246480/sounds.rss", # vyzer
+    "https://feeds.soundcloud.com/users/soundcloud:users:1153776793/sounds.rss", # kets4eki
+    "https://feeds.soundcloud.com/users/soundcloud:users:1122731785/sounds.rss", # d3r
+    "https://feeds.soundcloud.com/users/soundcloud:users:523819995/sounds.rss", # 6arelyhuman
+    "https://feeds.soundcloud.com/users/soundcloud:users:1200417373/sounds.rss", # kets2eki (kets archive)
+    "https://feeds.soundcloud.com/users/soundcloud:users:1478512195/sounds.rss", # anarchist sanctuary (as - kets & asteria songs)
+    "https://feeds.soundcloud.com/users/soundcloud:users:1221437284/sounds.rss", # despised
+    "https://feeds.soundcloud.com/users/soundcloud:users:1522578684/sounds.rss", # an4rch (asteria archive)
+    "https://feeds.soundcloud.com/users/soundcloud:users:1221718432/sounds.rss", # archive
+    "https://feeds.soundcloud.com/users/soundcloud:users:1353863904/sounds.rss", # as (remixes)
+    "https://feeds.soundcloud.com/users/soundcloud:users:1014983476/sounds.rss", # vychives
 ]
 
 SOUNDCLOUD_WEBHOOK = os.environ.get("HEYOEEFSDFS")
