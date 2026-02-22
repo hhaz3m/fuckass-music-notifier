@@ -8,18 +8,40 @@ from flask import Flask, jsonify
 # =====================
 SOUNDCLOUD_USERS = [
     "https://feeds.soundcloud.com/users/soundcloud:users:871836190/sounds.rss", # asteria
+    "https://feeds.soundcloud.com/users/soundcloud:users:1522578684/sounds.rss", # an4rch (asteria archive)
     "https://feeds.soundcloud.com/users/soundcloud:users:277600140/sounds.rss", # lytra
     "https://feeds.soundcloud.com/users/soundcloud:users:671246480/sounds.rss", # vyzer
-    "https://feeds.soundcloud.com/users/soundcloud:users:1153776793/sounds.rss", # kets4eki
-    "https://feeds.soundcloud.com/users/soundcloud:users:1122731785/sounds.rss", # d3r
-    "https://feeds.soundcloud.com/users/soundcloud:users:523819995/sounds.rss", # 6arelyhuman
-    "https://feeds.soundcloud.com/users/soundcloud:users:1200417373/sounds.rss", # kets2eki (kets archive)
-    "https://feeds.soundcloud.com/users/soundcloud:users:1478512195/sounds.rss", # anarchist sanctuary (as - kets & asteria songs)
-    "https://feeds.soundcloud.com/users/soundcloud:users:1221437284/sounds.rss", # despised
-    "https://feeds.soundcloud.com/users/soundcloud:users:1522578684/sounds.rss", # an4rch (asteria archive)
-    "https://feeds.soundcloud.com/users/soundcloud:users:1221718432/sounds.rss", # archive
-    "https://feeds.soundcloud.com/users/soundcloud:users:1353863904/sounds.rss", # as (remixes)
     "https://feeds.soundcloud.com/users/soundcloud:users:1014983476/sounds.rss", # vychives
+    "https://feeds.soundcloud.com/users/soundcloud:users:1153776793/sounds.rss", # kets4eki
+    "https://feeds.soundcloud.com/users/soundcloud:users:1200417373/sounds.rss", # kets2eki (kets archive)
+    "https://feeds.soundcloud.com/users/soundcloud:users:1122731785/sounds.rss", # d3r
+    "https://feeds.soundcloud.com/users/soundcloud:users:1221437284/sounds.rss", # despised
+    "https://feeds.soundcloud.com/users/soundcloud:users:523819995/sounds.rss", # 6arelyhuman
+    "https://feeds.soundcloud.com/users/soundcloud:users:1353863904/sounds.rss", # anarchist sanctuary (remixes)
+    "https://feeds.soundcloud.com/users/soundcloud:users:1478512195/sounds.rss", # anarchist sanctuary (songs)
+    "https://feeds.soundcloud.com/users/soundcloud:users:1221718432/sounds.rss", # archive
+]
+YOUTUBE_USERS = [
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCMvmRb3dal_aGxmhTVeRCdw",  # asteria main channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCJMm3-iHCoqaWkr_Q5_E8UA",  # asteria topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCOkqU6zsc_yxKFj5X1-O9HQ",  # an4rch topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCeSYZhLKq-L9rkOJHmljRUw",  # lytra main channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCK2_5EdAbnsffpsukfFczAQ",  # lytra topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UC18FYoV5GJGVzqv3zDZITYg",  # vyzer main channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCJl6F8Cm_5b4xLePetRO_qw",  # vyzer topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UC-q4y1fPEIgh6WbAiW962lw",  # kets4eki main channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCtLqYA9BYXeFwXtm1m2hyHQ",  # kets4eki topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCfblnc0y3hlfq4QWl8ly1IA",  # kets2eki topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UC51_vD84WCLxJHGkGtrLnQA",  # d3r main channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCvvfAEnHwOEoMMnt7Ag-DmA",  # d3r topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCBNRE3Axcf6espkth9G_KpA",  # despised main channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCSW-wNDh8bK037-QHmbD9Gw",  # despised topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCI0wE8MldFp305Kq-hd6ahA",  # 6arelyhuman main channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCgwQOhO0eKZsqdWcPDkrGZQ",  # 6arelyhuman topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCRuQ1ST8xCwHZrX95fj1ypA",  # as remixes topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCQZET0rGIVQWb228H2vu9UQ",  # as songs main channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UC9iWImT4TFIit7FLJcBKFfA",  # as songs topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UC3nYNIeWVEx0bvBs55-l34g",  # archive5077 main channel
 ]
 
 SOUNDCLOUD_WEBHOOK = os.environ.get("HEYOEEFSDFS")
@@ -46,7 +68,7 @@ cache = load_cache()
 # =====================
 # FUNCTIONS
 # =====================
-def get_latest_track(feed_url):
+def get_latest_soundcloud_track(feed_url):
     try:
         r = requests.get(feed_url, timeout=10)
         r.raise_for_status()
@@ -68,7 +90,43 @@ def get_latest_track(feed_url):
         print(f"❌ Error fetching {feed_url}: {e}")
         return None
 
-def send_discord(track):
+def get_latest_youtube_video(feed_url):
+    try:
+        r = requests.get(feed_url, timeout=10)
+        r.raise_for_status()
+        root = ET.fromstring(r.text)
+
+        ns = {
+            "atom": "http://www.w3.org/2005/Atom",
+            "yt": "http://www.youtube.com/xml/schemas/2015",
+            "media": "http://search.yahoo.com/mrss/"
+        }
+
+        channel_title = root.findtext("atom:title", default="Unknown Channel", namespaces=ns)
+
+        entry = root.find("atom:entry", ns)
+        if entry is None:
+            return None
+
+        title = entry.findtext("atom:title", "Untitled", ns)
+        link = entry.find("atom:link", ns).attrib["href"]
+        video_id = entry.findtext("yt:videoId", "", ns)
+
+        thumbnail = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
+
+        return {
+            "title": title,
+            "link": link,
+            "artist": channel_title,
+            "image": thumbnail,
+            "platform": "YouTube"
+        }
+
+    except Exception as e:
+        print(f"❌ Error fetching YouTube feed {feed_url}: {e}")
+        return None
+
+def send_discord_soundcloud(track):
     payload = {
         "content": f"{track['artist']} — {track['title']} @everyone",
         "embeds": [{
@@ -90,18 +148,41 @@ def send_discord(track):
     except Exception as e:
         print(f"❌ Error sending webhook: {e}")
 
+def send_youtube_discord(video):
+    payload = {
+        "content": f"{video['artist']} — {video['title']} @everyone",
+        "embeds": [{
+            "title": video["title"],
+            "url": video["link"],
+            "color": 16711680,  # red
+            "author": {"name": video["artist"], "url": video["link"]},
+            "image": {"url": video["image"]},
+            "footer": {"text": "YouTube • New Upload ▶️"},
+        }],
+        "allowed_mentions": {"parse": ["everyone"]}
+    }
+
+    try:
+        r = requests.post(YT_WEBHOOK, json=payload, timeout=5)
+        if r.ok:
+            print(f"✅ Sent YT: {video['artist']} — {video['title']}")
+        else:
+            print(f"❌ Failed YT webhook: {r.status_code} {r.text}")
+    except Exception as e:
+        print(f"❌ Error sending YT webhook: {e}")
+
 def notify_all_feeds():
     global cache
     updated = False
 
     for feed in SOUNDCLOUD_USERS:
-        track = get_latest_track(feed)
+        track = get_latest_soundcloud_track(feed)
         if not track:
             continue
 
         last_link = cache.get(feed)
         if last_link != track["link"]:  # only send if new
-            send_discord(track)
+            send_discord_soundcloud(track)
             cache[feed] = track["link"]
             updated = True
         else:
@@ -110,6 +191,26 @@ def notify_all_feeds():
     if updated:
         save_cache(cache)
 
+def notify_all_youtube():
+    global cache
+    updated = False
+
+    for feed in YOUTUBE_CHANNELS:
+        video = get_latest_youtube_video(feed)
+        if not video:
+            continue
+
+        last_link = cache.get(feed)
+        if last_link != video["link"]:
+            send_youtube_discord(video)
+            cache[feed] = video["link"]
+            updated = True
+        else:
+            print(f"⏩ Skipped YT (already sent): {video['artist']} — {video['title']}")
+
+    if updated:
+        save_cache(cache)
+        
 # =====================
 # FLASK SERVER
 # =====================
@@ -181,9 +282,20 @@ def uptime_status():
 def healthz():
     return jsonify({"status": "ok"}), 200
 
-@app.route("/send")
+@app.route("/sendsc")
 def send_all():
     notify_all_feeds()
+    return jsonify({"status": "sent"}), 200
+
+@app.route("/sendyt")
+def send_all():
+    notify_all_youtube()
+    return jsonify({"status": "sent"}), 200
+
+@app.route("/sendall")
+def send_all():
+    notify_all_feeds()
+    notify_all_youtube()
     return jsonify({"status": "sent"}), 200
 
 # =====================
@@ -193,6 +305,8 @@ def auto_notify_loop():
     while True:
         print("🔁 Checking SoundCloud feeds...")
         notify_all_feeds()
+        print("🔁 Checking YouTube feeds...")
+        notify_all_youtube()
         time.sleep(90)  # every 1.5 minutes (90 seconds)
 
 # =====================
