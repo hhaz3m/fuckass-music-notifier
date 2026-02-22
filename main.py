@@ -192,7 +192,7 @@ def auto_notify_loop():
     while True:
         print("🔁 Checking SoundCloud feeds...")
         notify_all_feeds()
-        time.sleep(300)  # every 5 minutes (300 seconds)
+        time.sleep(90)  # every 1.5 minutes (90 seconds)
 
 # =====================
 # RUN
