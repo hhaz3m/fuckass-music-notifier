@@ -276,7 +276,7 @@ def uptime_status():
         """
         return html, 200, {"Content-Type": "text/html; charset=utf-8"}
     except Exception as e:
-        return f"<h3>⚠️ Error fetching UptimeRobot data: {e}</h3>"ô, 500, {"Content-Type": "text/html; charset=utf-8"}
+        return f"<h3>⚠️ Error fetching UptimeRobot data: {e}</h3>", 500, {"Content-Type": "text/html; charset=utf-8"}
 
 @app.route("/healthz")
 def healthz():
