@@ -2,6 +2,9 @@ import requests
 import threading, time, json, os
 import xml.etree.ElementTree as ET
 from flask import Flask, jsonify
+import uuid
+INSTANCE_ID = str(uuid.uuid4())
+print("Instance ID:", INSTANCE_ID)
 
 # =====================
 # CONFIG
@@ -31,6 +34,7 @@ YOUTUBE_USERS = [
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCJl6F8Cm_5b4xLePetRO_qw",  # vyzer topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC-q4y1fPEIgh6WbAiW962lw",  # kets4eki main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCtLqYA9BYXeFwXtm1m2hyHQ",  # kets4eki topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCRlou117WaCPnx9BJEA6Jsw",  # kets2eki main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCfblnc0y3hlfq4QWl8ly1IA",  # kets2eki topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC51_vD84WCLxJHGkGtrLnQA",  # d3r main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCvvfAEnHwOEoMMnt7Ag-DmA",  # d3r topic channel
@@ -119,6 +123,7 @@ def get_latest_youtube_video(feed_url):
             "link": link,
             "artist": channel_title,
             "image": thumbnail,
+            "video_id": video_id,
             "platform": "YouTube"
         }
 
@@ -195,20 +200,23 @@ def notify_all_youtube():
     global cache
     updated = False
 
-    for feed in YOUTUBE_USERS:  # fixed variable name
+    sent_videos = set(cache.get("youtube_sent_ids", []))
+
+    for feed in YOUTUBE_USERS:
         video = get_latest_youtube_video(feed)
         if not video:
             continue
 
-        last_link = cache.get(feed)
-        if last_link != video["link"]:
-            send_youtube_discord(video)
-            cache[feed] = video["link"]
-            updated = True
-        else:
-            print(f"⏩ Skipped YT (already sent): {video['artist']} — {video['title']}")
+        if video["video_id"] in sent_videos:
+            print(f"⏩ Skipped duplicate YT: {video['title']}")
+            continue
+
+        send_youtube_discord(video)
+        sent_videos.add(video["video_id"])
+        updated = True
 
     if updated:
+        cache["youtube_sent_ids"] = list(sent_videos)
         save_cache(cache)
         
 # =====================
@@ -315,4 +323,4 @@ def auto_notify_loop():
 if __name__ == "__main__":
     notify_all_feeds()  # send immediately on start
     threading.Thread(target=auto_notify_loop, daemon=True).start()
-    app.run(host="0.0.0.0", port=PORT)
+    app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
