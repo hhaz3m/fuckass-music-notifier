@@ -13,6 +13,7 @@ SOUNDCLOUD_USERS = [
     "https://feeds.soundcloud.com/users/soundcloud:users:871836190/sounds.rss", # asteria
     "https://feeds.soundcloud.com/users/soundcloud:users:1522578684/sounds.rss", # an4rch (asteria archive)
     "https://feeds.soundcloud.com/users/soundcloud:users:277600140/sounds.rss", # lytra
+    "https://feeds.soundcloud.com/users/soundcloud:users:1481050799/sounds.rss", # (used to be) lychives
     "https://feeds.soundcloud.com/users/soundcloud:users:671246480/sounds.rss", # vyzer
     "https://feeds.soundcloud.com/users/soundcloud:users:1014983476/sounds.rss", # vychives
     "https://feeds.soundcloud.com/users/soundcloud:users:1153776793/sounds.rss", # kets4eki
@@ -20,7 +21,7 @@ SOUNDCLOUD_USERS = [
     "https://feeds.soundcloud.com/users/soundcloud:users:1122731785/sounds.rss", # d3r
     "https://feeds.soundcloud.com/users/soundcloud:users:1221437284/sounds.rss", # despised
     "https://feeds.soundcloud.com/users/soundcloud:users:523819995/sounds.rss", # 6arelyhuman
-    "https://feeds.soundcloud.com/users/soundcloud:users:1353863904/sounds.rss", # anarchist sanctuary (remixes)
+    "https://feeds.soundcloud.com/users/soundcloud:users:1671149930/sounds.rss", # anarchist sanctuary (distributor)
     "https://feeds.soundcloud.com/users/soundcloud:users:1478512195/sounds.rss", # anarchist sanctuary (songs)
     "https://feeds.soundcloud.com/users/soundcloud:users:1221718432/sounds.rss", # archive
 ]
@@ -42,7 +43,7 @@ YOUTUBE_USERS = [
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCSW-wNDh8bK037-QHmbD9Gw",  # despised topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCI0wE8MldFp305Kq-hd6ahA",  # 6arelyhuman main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCgwQOhO0eKZsqdWcPDkrGZQ",  # 6arelyhuman topic channel
-    "https://www.youtube.com/feeds/videos.xml?channel_id=UCRuQ1ST8xCwHZrX95fj1ypA",  # as remixes topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCRuQ1ST8xCwHZrX95fj1ypA",  # as distributor topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCQZET0rGIVQWb228H2vu9UQ",  # as songs main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC9iWImT4TFIit7FLJcBKFfA",  # as songs topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC3nYNIeWVEx0bvBs55-l34g",  # archive5077 main channel
@@ -224,67 +225,227 @@ def notify_all_youtube():
 # =====================
 app = Flask(__name__)
 
+# =====================
+# HOME PAGE
+# =====================
 @app.route("/")
 def home():
     html = """
-    <div style="max-width:600px;margin:auto;text-align:center;font-family:sans-serif;">
-      <h2>Server Uptime Monitor</h2>
-      <p style="color:#666;">View real-time uptime stats here:</p>
-      <a href="https://stats.uptimerobot.com/T2er9KoWTg/801768071" target="_blank"
-         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
-                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
-         🔗 View Live Status (Uptime Robot)
-      </a>
-      <a href="https://m0sxgqql.status.cron-job.org" target="_blank"
-         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
-                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
-         🔗 View Live Status (Cron Job)
-      </a>
-      <a href="https://fuckass-music-notifier.betteruptime.com" target="_blank"
-         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
-                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
-         🔗 View Live Status (Better Stack)
-      </a>
-      <a href="https://fuckass-music-notifier.onrender.com/status" target="_blank"
-         style="display:inline-block;background:#4caf50;color:white;padding:10px 20px;
-                border-radius:8px;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.2);">
-         🔗 Go To Status Page
-      </a>
-    </div>
+    <html>
+    <head>
+    <style>
+    body {
+        background-color: #000;
+        color: red;
+        font-family: Arial, sans-serif;
+        font-size: 24px;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        max-width: 700px;
+        padding: 20px;
+    }
+    h1, h2, h3, p {
+        margin: 0;
+    }
+    .button {
+        background-color: #000;
+        color: red;
+        padding: 16px 24px;
+        font-size: 24px;
+        border: 2px solid red;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border-radius: 8px;
+        display: inline-block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .button:hover {
+        background-color: #111;
+        border-color: #ff3333;
+        color: #ff3333;
+    }
+    </style>
+    </head>
+    <body>
+        <div class="main-container">
+            <h1>Server Uptime Monitor</h1>
+            <p>View real-time uptime stats here:</p>
+
+            <a class="button"
+               href="https://stats.uptimerobot.com/T2er9KoWTg/801768071"
+               target="_blank">
+               🔗 View Live Status (Uptime Robot)
+            </a>
+
+            <a class="button"
+               href="https://m0sxgqql.status.cron-job.org"
+               target="_blank">
+               🔗 View Live Status (Cron Job)
+            </a>
+
+            <a class="button"
+               href="https://fuckass-music-notifier.betteruptime.com"
+               target="_blank">
+               🔗 View Live Status (Better Stack)
+            </a>
+
+            <a class="button"
+               href="/status"
+               target="_blank">
+               🔗 Go To Status Page
+            </a>
+        </div>
+    </body>
+    </html>
     """
+
     return html, 200, {"Content-Type": "text/html; charset=utf-8"}
 
+
+# =====================
+# STATUS PAGE
+# =====================
 @app.route("/status")
 def uptime_status():
     if not UPTIMEROBOT_API_KEY:
-        return "<h3 style='color:red;text-align:center;'>❌ Missing UPTIMEROBOT_API_KEY in environment</h3>", 500, {"Content-Type": "text/html; charset=utf-8"}
+        return """
+        <html>
+        <body style="background:black;color:red;font-family:Arial;text-align:center;padding-top:50px;">
+            <h2>❌ Missing UPTIMEROBOT_API_KEY in environment</h2>
+        </body>
+        </html>
+        """, 500, {"Content-Type": "text/html; charset=utf-8"}
     try:
         response = requests.post(
             "https://api.uptimerobot.com/v2/getMonitors",
-            data={"api_key": UPTIMEROBOT_API_KEY, "format": "json"},
+            data={
+                "api_key": UPTIMEROBOT_API_KEY,
+                "format": "json"
+            },
             timeout=5
         ).json()
-
         monitor = response["monitors"][0]
         name = monitor["friendly_name"]
         status = monitor["status"]
         uptime = monitor.get("all_time_uptime_ratio", "N/A")
-
         status_text = "🟢 Online" if status == 2 else "🔴 Down"
         color = "#4caf50" if status == 2 else "#f44336"
-
         html = f"""
-        <div style="font-family:sans-serif;text-align:center;margin-top:50px;">
-            <h2>{name} — Status</h2>
-            <p style="font-size:24px;color:{color};">{status_text}</p>
-            <p>All-time uptime: <b>{uptime}%</b></p>
-            <iframe src="https://fuckass-music-notifier.betteruptime.com/badge?theme=dark" width="250" height="30" frameborder="0" scrolling="no" style="color-scheme: normal"></iframe>
-            <iframe src="https://fuckass-music-notifier.betteruptime.com" width="1000" height="800"></iframe>
-        </div>
+        <html>
+        <head>
+        <style>
+        body {{
+            background-color: #000;
+            color: red;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }}
+        .main-container {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+        }}
+        .status-box {{
+            border: 2px solid red;
+            padding: 20px;
+            border-radius: 12px;
+            background: #111;
+            width: 100%;
+            box-sizing: border-box;
+        }}
+        iframe {{
+            border: 2px solid red;
+            border-radius: 8px;
+            background: #000;
+        }}
+        .status-text {{
+            font-size: 36px;
+            color: {color};
+        }}
+        .uptime {{
+            font-size: 24px;
+        }}
+        .button {{
+            background-color: #000;
+            color: red;
+            padding: 16px 24px;
+            font-size: 20px;
+            border: 2px solid red;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border-radius: 8px;
+            display: inline-block;
+        }}
+        .button:hover {{
+            background-color: #111;
+            border-color: #ff3333;
+            color: #ff3333;
+        }}
+        </style>
+        </head>
+        <body>
+            <div class="main-container">
+                <div class="status-box">
+                    <h1>{name} — Status</h1>
+                    <p class="status-text">{status_text}</p>
+                    <p class="uptime">
+                        All-time uptime: <b>{uptime}%</b>
+                    </p>
+                </div>
+                <iframe
+                    src="https://fuckass-music-notifier.betteruptime.com/badge?theme=dark"
+                    width="250"
+                    height="30"
+                    frameborder="0"
+                    scrolling="no">
+                </iframe>
+                <iframe
+                    src="https://fuckass-music-notifier.betteruptime.com"
+                    width="1000"
+                    height="700">
+                </iframe>
+                <a class="button" href="/">
+                    ⬅ Back Home
+                </a>
+            </div>
+        </body>
+        </html>
         """
         return html, 200, {"Content-Type": "text/html; charset=utf-8"}
+
     except Exception as e:
-        return f"<h3>⚠️ Error fetching UptimeRobot data: {e}</h3>", 500, {"Content-Type": "text/html; charset=utf-8"}
+        return f"""
+        <html>
+        <body style="background:black;color:red;font-family:Arial;text-align:center;padding-top:50px;">
+            <h2>⚠️ Error fetching UptimeRobot data</h2>
+            <p>{e}</p>
+        </body>
+        </html>
+        """, 500, {"Content-Type": "text/html; charset=utf-8"}
 
 @app.route("/healthz")
 def healthz():
