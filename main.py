@@ -21,6 +21,7 @@ SOUNDCLOUD_USERS = [
     "https://feeds.soundcloud.com/users/soundcloud:users:1122731785/sounds.rss", # d3r
     "https://feeds.soundcloud.com/users/soundcloud:users:1221437284/sounds.rss", # despised
     "https://feeds.soundcloud.com/users/soundcloud:users:523819995/sounds.rss", # 6arelyhuman
+    "https://feeds.soundcloud.com/users/soundcloud:users:1353863904/sounds.rss", # anarchist sanctuary (remixes)
     "https://feeds.soundcloud.com/users/soundcloud:users:1671149930/sounds.rss", # anarchist sanctuary (distributor)
     "https://feeds.soundcloud.com/users/soundcloud:users:1478512195/sounds.rss", # anarchist sanctuary (songs)
     "https://feeds.soundcloud.com/users/soundcloud:users:1221718432/sounds.rss", # archive
@@ -43,9 +44,9 @@ YOUTUBE_USERS = [
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCSW-wNDh8bK037-QHmbD9Gw",  # despised topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCI0wE8MldFp305Kq-hd6ahA",  # 6arelyhuman main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCgwQOhO0eKZsqdWcPDkrGZQ",  # 6arelyhuman topic channel
-    "https://www.youtube.com/feeds/videos.xml?channel_id=UCRuQ1ST8xCwHZrX95fj1ypA",  # as distributor topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCRuQ1ST8xCwHZrX95fj1ypA",  # as remixes topic channel
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCGyu4H0YNhFZIU8j47C_yZg",  # as distributor topic channel 
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCQZET0rGIVQWb228H2vu9UQ",  # as songs main channel
-    "https://www.youtube.com/feeds/videos.xml?channel_id=UC9iWImT4TFIit7FLJcBKFfA",  # as songs topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC3nYNIeWVEx0bvBs55-l34g",  # archive5077 main channel
 ]
 
@@ -233,6 +234,7 @@ def home():
     html = """
     <html>
     <head>
+    <title>fmn - home</title>
     <style>
     body {
         background-color: #000;
@@ -281,31 +283,31 @@ def home():
     </head>
     <body>
         <div class="main-container">
-            <h1>Server Uptime Monitor</h1>
-            <p>View real-time uptime stats here:</p>
+            <h1>server uptime monitor</h1>
+            <p>view uptime stats here</p>
 
             <a class="button"
                href="https://stats.uptimerobot.com/T2er9KoWTg/801768071"
                target="_blank">
-               🔗 View Live Status (Uptime Robot)
+               view live status (uptime robot)
             </a>
 
             <a class="button"
                href="https://m0sxgqql.status.cron-job.org"
                target="_blank">
-               🔗 View Live Status (Cron Job)
+               view live status (cron job)
             </a>
 
             <a class="button"
                href="https://fuckass-music-notifier.betteruptime.com"
                target="_blank">
-               🔗 View Live Status (Better Stack)
+               view live status (better stack)
             </a>
 
             <a class="button"
                href="/status"
                target="_blank">
-               🔗 Go To Status Page
+               status page
             </a>
         </div>
     </body>
@@ -324,7 +326,7 @@ def uptime_status():
         return """
         <html>
         <body style="background:black;color:red;font-family:Arial;text-align:center;padding-top:50px;">
-            <h2>❌ Missing UPTIMEROBOT_API_KEY in environment</h2>
+            <h2>❌ missing UPTIMEROBOT_API_KEY in environment</h2>
         </body>
         </html>
         """, 500, {"Content-Type": "text/html; charset=utf-8"}
@@ -346,6 +348,7 @@ def uptime_status():
         html = f"""
         <html>
         <head>
+        <title>fmn - status</title>
         <style>
         body {{
             background-color: #000;
@@ -410,10 +413,10 @@ def uptime_status():
         <body>
             <div class="main-container">
                 <div class="status-box">
-                    <h1>{name} — Status</h1>
+                    <h1>{name} — status</h1>
                     <p class="status-text">{status_text}</p>
                     <p class="uptime">
-                        All-time uptime: <b>{uptime}%</b>
+                        all-time uptime: <b>{uptime}%</b>
                     </p>
                 </div>
                 <iframe
@@ -429,7 +432,7 @@ def uptime_status():
                     height="700">
                 </iframe>
                 <a class="button" href="/">
-                    ⬅ Back Home
+                    ⬅ home
                 </a>
             </div>
         </body>
@@ -441,7 +444,7 @@ def uptime_status():
         return f"""
         <html>
         <body style="background:black;color:red;font-family:Arial;text-align:center;padding-top:50px;">
-            <h2>⚠️ Error fetching UptimeRobot data</h2>
+            <h2>⚠️ error fetching UptimeRobot data</h2>
             <p>{e}</p>
         </body>
         </html>
