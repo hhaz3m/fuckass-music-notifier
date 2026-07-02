@@ -52,18 +52,18 @@ YOUTUBE_USERS = [
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC3nYNIeWVEx0bvBs55-l34g",  # archive5077 main channel
 ]
 SPOTIFY_USERS = [
-    "0I7VmE5LkRmWoHltutTUh9", ## asteria
-    "15fAtfsWfQ28x4A5fgNooB", ## an4rch
-    "765caWhYCY7Yiw5F6jZZHg", ## lytra
-    ## couldnt find lychives
-    "5jLQxZDFd3vrRb7t8OETCA", ## vyzer
-    "4waORdvuFnffJPrj784KeG", ## kets4eki
-    "04WeXjs1GAsBo58NYheafu", ## kets2eki
-    "41PE0deubI6MpwYruSEWHG", ## d3r
-    "0lFdeVF7rU3RXDaOx4Uiqf", ## despised (d3r archive on spotify)
-    "1oYXEVbGh1L7EWGm9C68cN", ## 6arelyhuman
-    "1Vb46tObS5tpK7GVJrVVpq"  ## anarchist sanctuary
-    ## archive5077 sadly doesnt exist on spotify :(
+    "0I7VmE5LkRmWoHltutTUh9", # asteria
+    "15fAtfsWfQ28x4A5fgNooB", # an4rch
+    "765caWhYCY7Yiw5F6jZZHg", # lytra
+    # couldnt find lychives
+    "5jLQxZDFd3vrRb7t8OETCA", # vyzer
+    "4waORdvuFnffJPrj784KeG", # kets4eki
+    "04WeXjs1GAsBo58NYheafu", # kets2eki
+    "41PE0deubI6MpwYruSEWHG", # d3r
+    "0lFdeVF7rU3RXDaOx4Uiqf", # despised (d3r archive on spotify)
+    "1oYXEVbGh1L7EWGm9C68cN", # 6arelyhuman
+    "1Vb46tObS5tpK7GVJrVVpq"  # anarchist sanctuary
+    # archive5077 sadly doesnt exist on spotify :(
 ]
 
 SOUNDCLOUD_WEBHOOK = os.environ.get("scHEYOEEFSDFS")
