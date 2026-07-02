@@ -3,6 +3,7 @@ import threading, time, json, os
 import xml.etree.ElementTree as ET
 from flask import Flask, jsonify
 import uuid
+import base64
 INSTANCE_ID = str(uuid.uuid4())
 print("Instance ID:", INSTANCE_ID)
 
@@ -32,6 +33,7 @@ YOUTUBE_USERS = [
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCOkqU6zsc_yxKFj5X1-O9HQ",  # an4rch topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCeSYZhLKq-L9rkOJHmljRUw",  # lytra main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCK2_5EdAbnsffpsukfFczAQ",  # lytra topic channel
+    ## lychives doesnt exist on yt :(
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC18FYoV5GJGVzqv3zDZITYg",  # vyzer main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCJl6F8Cm_5b4xLePetRO_qw",  # vyzer topic channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC-q4y1fPEIgh6WbAiW962lw",  # kets4eki main channel
@@ -49,10 +51,27 @@ YOUTUBE_USERS = [
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCQZET0rGIVQWb228H2vu9UQ",  # as songs main channel
     "https://www.youtube.com/feeds/videos.xml?channel_id=UC3nYNIeWVEx0bvBs55-l34g",  # archive5077 main channel
 ]
+SPOTIFY_USERS = [
+    "0I7VmE5LkRmWoHltutTUh9", ## asteria
+    "15fAtfsWfQ28x4A5fgNooB", ## an4rch
+    "765caWhYCY7Yiw5F6jZZHg", ## lytra
+    ## couldnt find lychives
+    "5jLQxZDFd3vrRb7t8OETCA", ## vyzer
+    "4waORdvuFnffJPrj784KeG", ## kets4eki
+    "04WeXjs1GAsBo58NYheafu", ## kets2eki
+    "41PE0deubI6MpwYruSEWHG", ## d3r
+    "0lFdeVF7rU3RXDaOx4Uiqf", ## despised (d3r archive on spotify)
+    "1oYXEVbGh1L7EWGm9C68cN", ## 6arelyhuman
+    "1Vb46tObS5tpK7GVJrVVpq"  ## anarchist sanctuary
+    ## archive5077 sadly doesnt exist on spotify :(
+]
 
-SOUNDCLOUD_WEBHOOK = os.environ.get("HEYOEEFSDFS")
-YT_WEBHOOK = os.environ.get("OHOHA")
-UPTIMEROBOT_API_KEY = os.environ.get("UPTIMEROBOT_API_KEY")
+SOUNDCLOUD_WEBHOOK = os.environ.get("scHEYOEEFSDFS")
+YT_WEBHOOK = os.environ.get("ytOHOHA")
+SPOTIFY_WEBHOOK = os.environ.get("spTRUTEREWOS")
+SPOTIFY_CID = os.environ.get("spCIDKEYA")
+SPOTIFY_CSC = os.environ.get("spCSCASDA")
+UPTIMEROBOT_API_KEY = os.environ.get("uptrapik")
 PORT = int(os.environ.get("PORT", 8080))
 CACHE_FILE = "last_sent.json"
 
@@ -133,6 +152,45 @@ def get_latest_youtube_video(feed_url):
         print(f"❌ Error fetching YouTube feed {feed_url}: {e}")
         return None
 
+def get_spotify_token():
+    auth = base64.b64encode(
+        f"{SPOTIFY_CID}:{SPOTIFY_CSC}".encode()
+    ).decode()
+
+    r = requests.post(
+        "https://accounts.spotify.com/api/token",
+        headers={
+            "Authorization": f"Basic {auth}"
+        },
+        data={
+            "grant_type": "client_credentials"
+        }
+    )
+
+    return r.json()["access_token"]
+
+def get_latest_spotify_release(artist_id, token):
+    r = requests.get(
+        f"https://api.spotify.com/v1/artists/{artist_id}/albums",
+        headers={
+            "Authorization": f"Bearer {token}"
+        },
+        params={
+            "include_groups": "album,single",
+            "limit": 1
+        }
+    )
+
+    album = r.json()["items"][0]
+
+    return {
+        "id": album["id"],
+        "title": album["name"],
+        "artist": album["artists"][0]["name"],
+        "image": album["images"][0]["url"],
+        "link": album["external_urls"]["spotify"]
+    }
+
 def send_discord_soundcloud(track):
     payload = {
         "content": f"{track['artist']} — {track['title']} @everyone",
@@ -178,6 +236,31 @@ def send_youtube_discord(video):
     except Exception as e:
         print(f"❌ Error sending YT webhook: {e}")
 
+def send_spotify_discord(release):
+    payload = {
+        "content": f"{release['artist']} — {release['title']} @everyone",
+        "embeds": [{
+            "title": release["title"],
+            "url": release["link"],
+            "color": 0x1DB954,
+            "author": {
+                "name": release["artist"],
+                "url": release["link"]
+            },
+            "image": {
+                "url": release["image"]
+            },
+            "footer": {
+                "text": "Spotify • New Release 🎵"
+            }
+        }],
+        "allowed_mentions": {
+            "parse": ["everyone"]
+        }
+    }
+
+    requests.post(SPOTIFY_WEBHOOK, json=payload)
+
 def notify_all_feeds():
     global cache
     updated = False
@@ -221,6 +304,32 @@ def notify_all_youtube():
         cache["youtube_sent_ids"] = list(sent_videos)
         save_cache(cache)
         
+
+def notify_all_spotify():
+    global cache
+    try:
+        token = get_spotify_token()
+    except Exception as e:
+        print(f"❌ Couldn't get Spotify token: {e}")
+        return
+    updated=False
+    for artist_id in SPOTIFY_USERS:
+        try:
+            release=get_latest_spotify_release(artist_id, token)
+            if not release:
+                continue
+            key=f"spotify_{artist_id}"
+            if cache.get(key)==release["id"]:
+                print(f"⏩ Skipped Spotify: {release['artist']} — {release['title']}")
+                continue
+            send_spotify_discord(release)
+            cache[key]=release["id"]
+            updated=True
+        except Exception as e:
+            print(f"❌ Spotify error ({artist_id}): {e}")
+    if updated:
+        save_cache(cache)
+
 # =====================
 # FLASK SERVER
 # =====================
@@ -464,10 +573,17 @@ def send_yt():
     notify_all_youtube()
     return jsonify({"status": "sent"}), 200
 
+@app.route("/sendsp")
+def send_sp():
+    notify_all_spotify()
+    return jsonify({"status":"sent"}), 200
+
+
 @app.route("/sendall")
 def send_all():
     notify_all_feeds()
     notify_all_youtube()
+    notify_all_spotify()
     return jsonify({"status": "sent"}), 200
 
 # =====================
@@ -479,12 +595,16 @@ def auto_notify_loop():
         notify_all_feeds()
         print("🔁 Checking YouTube feeds...")
         notify_all_youtube()
+        print("🔁 Checking Spotify releases...")
+        notify_all_spotify()
         time.sleep(90)  # every 1.5 minutes (90 seconds)
 
 # =====================
 # RUN
 # =====================
 if __name__ == "__main__":
-    notify_all_feeds()  # send immediately on start
+    notify_all_feeds()
+    notify_all_youtube()
+    notify_all_spotify()
     threading.Thread(target=auto_notify_loop, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
