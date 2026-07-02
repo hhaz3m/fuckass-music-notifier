@@ -100,7 +100,7 @@ def get_latest_soundcloud_track(feed_url):
         root = ET.fromstring(r.text)
         artist = root.findtext("./channel/title", "Unknown Artist")
         item = root.find("./channel/item")
-        if not item:
+        if item is None:
             return None
         title = item.findtext("title", "Untitled")
         link = item.findtext("link", "")
@@ -184,26 +184,39 @@ def get_spotify_token():
 def get_latest_spotify_release(artist_id, token):
     r = requests.get(
         f"https://api.spotify.com/v1/artists/{artist_id}/albums",
-        headers={
-            "Authorization": f"Bearer {token}"
-        },
+        headers={"Authorization": f"Bearer {token}"},
         params={
             "include_groups": "album,single",
-            "limit": 1
-        }
+            "limit": 1,
+            "market": "US"
+        },
+        timeout=10
     )
 
-    album = r.json()["items"][0]
+    if not r.ok:
+        print("Spotify release error:", r.status_code, r.text)
+        return None
+
+    items = r.json().get("items", [])
+    if not items:
+        return None
+
+    album = items[0]
+    images = album.get("images") or []
 
     return {
         "id": album["id"],
         "title": album["name"],
         "artist": album["artists"][0]["name"],
-        "image": album["images"][0]["url"],
+        "image": images[0]["url"] if images else "",
         "link": album["external_urls"]["spotify"]
     }
 
 def send_discord_soundcloud(track):
+    if not SOUNDCLOUD_WEBHOOK:
+    print("Missing SoundCloud webhook")
+    return
+    
     payload = {
         "content": f"{track['artist']} — {track['title']} @everyone",
         "embeds": [{
@@ -226,6 +239,10 @@ def send_discord_soundcloud(track):
         print(f"❌ Error sending webhook: {e}")
 
 def send_youtube_discord(video):
+    if not YT_WEBHOOK:
+    print("Missing YouTube webhook")
+    return
+    
     payload = {
         "content": f"{video['artist']} — {video['title']} @everyone",
         "embeds": [{
@@ -249,29 +266,38 @@ def send_youtube_discord(video):
         print(f"❌ Error sending YT webhook: {e}")
 
 def send_spotify_discord(release):
-    payload = {
-        "content": f"{release['artist']} — {release['title']} @everyone",
-        "embeds": [{
-            "title": release["title"],
-            "url": release["link"],
-            "color": 0x1DB954,
-            "author": {
-                "name": release["artist"],
-                "url": release["link"]
-            },
-            "image": {
-                "url": release["image"]
-            },
-            "footer": {
-                "text": "Spotify • New Release 🎵"
-            }
-        }],
-        "allowed_mentions": {
-            "parse": ["everyone"]
+    if not SPOTIFY_WEBHOOK:
+        print("Missing Spotify webhook")
+        return
+
+    embed = {
+        "title": release["title"],
+        "url": release["link"],
+        "color": 0x1DB954,
+        "author": {
+            "name": release["artist"],
+            "url": release["link"]
+        },
+        "footer": {
+            "text": "Spotify • New Release 🎵"
         }
     }
 
-    requests.post(SPOTIFY_WEBHOOK, json=payload)
+    if release.get("image"):
+        embed["image"] = {"url": release["image"]}
+
+    payload = {
+        "content": f"{release['artist']} — {release['title']} @everyone",
+        "embeds": [embed],
+        "allowed_mentions": {"parse": ["everyone"]}
+    }
+
+    try:
+        r = requests.post(SPOTIFY_WEBHOOK, json=payload, timeout=5)
+        if not r.ok:
+            print(f"❌ Failed Spotify webhook: {r.status_code} {r.text}")
+    except Exception as e:
+        print(f"❌ Error sending Spotify webhook: {e}")
 
 def notify_all_feeds():
     global cache
