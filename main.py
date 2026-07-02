@@ -613,15 +613,15 @@ def send_yt():
 
 @app.route("/sendsp")
 def send_sp():
-    notify_all_spotify()
-    return jsonify({"status":"sent"}), 200
+   # notify_all_spotify()
+    return jsonify({"text":"im so sorry i dont have premium so its not gon work chat"}), 404
 
 
 @app.route("/sendall")
 def send_all():
     notify_all_feeds()
     notify_all_youtube()
-    notify_all_spotify()
+    # notify_all_spotify()
     return jsonify({"status": "sent"}), 200
 
 # =====================
@@ -633,8 +633,8 @@ def auto_notify_loop():
         notify_all_feeds()
         print("🔁 Checking YouTube feeds...")
         notify_all_youtube()
-        print("🔁 Checking Spotify releases...")
-        notify_all_spotify()
+       # print("🔁 Checking Spotify releases...")
+       # notify_all_spotify()
         time.sleep(90)  # every 1.5 minutes (90 seconds)
 
 # =====================
@@ -643,6 +643,6 @@ def auto_notify_loop():
 if __name__ == "__main__":
     notify_all_feeds()
     notify_all_youtube()
-    notify_all_spotify()
+    # notify_all_spotify()
     threading.Thread(target=auto_notify_loop, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
