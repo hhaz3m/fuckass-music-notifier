@@ -153,6 +153,9 @@ def get_latest_youtube_video(feed_url):
         return None
 
 def get_spotify_token():
+    if not SPOTIFY_CID or not SPOTIFY_CSC:
+        raise Exception("Missing Spotify credentials in env vars")
+
     auth = base64.b64encode(
         f"{SPOTIFY_CID}:{SPOTIFY_CSC}".encode()
     ).decode()
@@ -160,15 +163,24 @@ def get_spotify_token():
     r = requests.post(
         "https://accounts.spotify.com/api/token",
         headers={
-            "Authorization": f"Basic {auth}"
+            "Authorization": f"Basic {auth}",
+            "Content-Type": "application/x-www-form-urlencoded"
         },
         data={
             "grant_type": "client_credentials"
         }
     )
 
-    return r.json()["access_token"]
+    if not r.ok:
+        print("Spotify token error:", r.status_code, r.text)
+        raise Exception("Spotify auth failed")
 
+    try:
+        return r.json()["access_token"]
+    except Exception:
+        print("Bad response:", r.text)
+        raise
+        
 def get_latest_spotify_release(artist_id, token):
     r = requests.get(
         f"https://api.spotify.com/v1/artists/{artist_id}/albums",
