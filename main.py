@@ -214,8 +214,8 @@ def get_latest_spotify_release(artist_id, token):
 
 def send_discord_soundcloud(track):
     if not SOUNDCLOUD_WEBHOOK:
-    print("Missing SoundCloud webhook")
-    return
+        print("Missing SoundCloud webhook")
+        return
     
     payload = {
         "content": f"{track['artist']} — {track['title']} @everyone",
@@ -240,8 +240,8 @@ def send_discord_soundcloud(track):
 
 def send_youtube_discord(video):
     if not YT_WEBHOOK:
-    print("Missing YouTube webhook")
-    return
+        print("Missing YouTube webhook")
+        return
     
     payload = {
         "content": f"{video['artist']} — {video['title']} @everyone",
