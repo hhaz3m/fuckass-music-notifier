@@ -2,6 +2,7 @@ import requests
 import threading, time, json, os
 import xml.etree.ElementTree as ET
 from flask import Flask, jsonify
+from yt_dlp import YoutubeDL
 import uuid
 import base64
 INSTANCE_ID = str(uuid.uuid4())
@@ -65,10 +66,24 @@ SPOTIFY_USERS = [
     "1Vb46tObS5tpK7GVJrVVpq"  # anarchist sanctuary
     # archive5077 sadly doesnt exist on spotify :(
 ]
+TIKTOK_USERS = [
+    "asteriasdeath", ## i dont even need to list who is who its already in the u/n
+    "an4rch82108363974",
+    "lytramusic",
+    "vyzer.mp3",
+    "kets4eki",
+    "kets4eki6251726",
+    "superswagboi2005", ## kets4eki 3rd acc
+    "d3rcore",
+    "6arelyhuman",
+##  "@anarchistsanctuary",
+    "archive5077"
+]
 
-SOUNDCLOUD_WEBHOOK = os.environ.get("scHEYOEEFSDFS")
-YT_WEBHOOK = os.environ.get("ytOHOHA")
-SPOTIFY_WEBHOOK = os.environ.get("spTRUTEREWOS")
+SOUNDCLOUD_WEBHOOK = os.environ.get("scDCWH")
+YT_WEBHOOK = os.environ.get("ytDCWH")
+SPOTIFY_WEBHOOK = os.environ.get("spDCWH")
+TIKTOK_WEBHOOK = os.environ.get("ttDCWH")
 SPOTIFY_CID = os.environ.get("spCIDKEYA")
 SPOTIFY_CSC = os.environ.get("spCSCASDA")
 UPTIMEROBOT_API_KEY = os.environ.get("uptrapik")
@@ -212,6 +227,42 @@ def get_latest_spotify_release(artist_id, token):
         "link": album["external_urls"]["spotify"]
     }
 
+def get_latest_tiktok_video(username):
+    try:
+        username = username.lstrip("@")
+
+        with YoutubeDL({
+            "quiet": True,
+            "skip_download": True,
+            "playlistend": 6,
+            "ignoreerrors": True,
+            "socket_timeout": 20,
+        }) as ydl:
+            profile = ydl.extract_info(
+                f"https://www.tiktok.com/@{username}",
+                download=False,
+            )
+
+        videos = [video for video in (profile.get("entries") or []) if video]
+        if not videos:
+            return None
+
+        latest = max(videos, key=lambda video: video.get("timestamp") or 0)
+        video_id = str(latest["id"])
+
+        return {
+            "id": video_id,
+            "title": latest.get("description") or latest.get("title") or "New TikTok",
+            "link": latest.get("webpage_url")
+                    or f"https://www.tiktok.com/@{username}/video/{video_id}",
+            "artist": latest.get("uploader") or username,
+            "image": latest.get("thumbnail") or "",
+        }
+
+    except Exception as e:
+        print(f"❌ TikTok error for @{username}: {e}")
+        return None
+
 def send_discord_soundcloud(track):
     if not SOUNDCLOUD_WEBHOOK:
         print("Missing SoundCloud webhook")
@@ -222,7 +273,7 @@ def send_discord_soundcloud(track):
         "embeds": [{
             "title": track["title"],
             "url": track["link"],
-            "color": 16742893,
+            "color": 0xff7005,
             "author": {"name": track["artist"], "url": track["link"]},
             "image": {"url": track["image"]},
             "footer": {"text": "SoundCloud • New Upload 🎵"},
@@ -248,7 +299,7 @@ def send_youtube_discord(video):
         "embeds": [{
             "title": video["title"],
             "url": video["link"],
-            "color": 16711680,  # red
+            "color": 0xff0000,  # red
             "author": {"name": video["artist"], "url": video["link"]},
             "image": {"url": video["image"]},
             "footer": {"text": "YouTube • New Upload ▶️"},
@@ -298,6 +349,39 @@ def send_spotify_discord(release):
             print(f"❌ Failed Spotify webhook: {r.status_code} {r.text}")
     except Exception as e:
         print(f"❌ Error sending Spotify webhook: {e}")
+
+def send_tiktok_discord(video):
+    if not TIKTOK_WEBHOOK:
+        print("Missing TikTok webhook")
+        return False
+
+    embed = {
+        "title": video["title"],
+        "url": video["link"],
+        "color": 0x9a6adf,
+        "author": {"name": video["artist"], "url": video["link"]},
+        "footer": {"text": "TikTok • New Upload"},
+    }
+    if video["image"]:
+        embed["image"] = {"url": video["image"]}
+
+    try:
+        r = requests.post(
+            TIKTOK_WEBHOOK,
+            json={
+                "content": f"{video['artist']} — new TikTok @everyone",
+                "embeds": [embed],
+                "allowed_mentions": {"parse": ["everyone"]},
+            },
+            timeout=10,
+        )
+        if not r.ok:
+            print(f"❌ Failed TikTok webhook: {r.status_code} {r.text}")
+        return r.ok
+    except Exception as e:
+        print(f"❌ Error sending TikTok webhook: {e}")
+        return False
+
 
 def notify_all_feeds():
     global cache
@@ -365,6 +449,27 @@ def notify_all_spotify():
             updated=True
         except Exception as e:
             print(f"❌ Spotify error ({artist_id}): {e}")
+    if updated:
+        save_cache(cache)
+
+def notify_all_tiktok():
+    global cache
+    updated = False
+
+    for username in TIKTOK_USERS:
+        video = get_latest_tiktok_video(username)
+        if not video:
+            continue
+
+        cache_key = f"tiktok:{username.lower()}"
+        if cache.get(cache_key) == video["id"]:
+            print(f"⏩ Skipped TikTok: {video['artist']} — {video['title']}")
+            continue
+
+        if send_tiktok_discord(video):
+            cache[cache_key] = video["id"]
+            updated = True
+
     if updated:
         save_cache(cache)
 
@@ -615,13 +720,17 @@ def send_yt():
 def send_sp():
    # notify_all_spotify()
     return jsonify({"text":"im so sorry i dont have premium so its not gon work chat"}), 404
-
+@app.route("/sendtt")
+def send_tt():
+    notify_all_tiktok()
+    return jsonify({"status": "sent"}), 200
 
 @app.route("/sendall")
 def send_all():
     notify_all_feeds()
     notify_all_youtube()
     # notify_all_spotify()
+    notify_all_tiktok()
     return jsonify({"status": "sent"}), 200
 
 # =====================
@@ -635,7 +744,9 @@ def auto_notify_loop():
         notify_all_youtube()
        # print("🔁 Checking Spotify releases...")
        # notify_all_spotify()
-        time.sleep(90)  # every 1.5 minutes (90 seconds)
+        print("🔁 Checking TikTok feeds...")
+        notify_all_tiktok()
+        time.sleep(90)  # every 1.5 minutes (1m 30s /// 90 seconds)
 
 # =====================
 # RUN
@@ -644,5 +755,6 @@ if __name__ == "__main__":
     notify_all_feeds()
     notify_all_youtube()
     # notify_all_spotify()
+    notify_all_tiktok()
     threading.Thread(target=auto_notify_loop, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
