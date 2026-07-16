@@ -227,24 +227,41 @@ def get_latest_spotify_release(artist_id, token):
         "link": album["external_urls"]["spotify"]
     }
 
-def get_latest_tiktok_video(username):
-    try:
-        username = username.lstrip("@")
+class SilentYTDLPLogger:
+    def debug(self, msg):
+        pass
 
+    def warning(self, msg):
+        pass
+
+    def error(self, msg):
+        pass
+def get_latest_tiktok_video(username):
+    username = username.lstrip("@")
+
+    try:
         with YoutubeDL({
             "quiet": True,
+            "no_warnings": True,
             "skip_download": True,
             "playlistend": 6,
             "ignoreerrors": True,
             "socket_timeout": 20,
+            "logger": SilentYTDLPLogger(),
         }) as ydl:
             profile = ydl.extract_info(
                 f"https://www.tiktok.com/@{username}",
                 download=False,
             )
 
+        if not profile:
+            print(f"⏩ Skipped TikTok: @{username} has no public videos")
+            return None
+
         videos = [video for video in (profile.get("entries") or []) if video]
+
         if not videos:
+            print(f"⏩ Skipped TikTok: @{username} has no public videos")
             return None
 
         latest = max(videos, key=lambda video: video.get("timestamp") or 0)
@@ -259,8 +276,8 @@ def get_latest_tiktok_video(username):
             "image": latest.get("thumbnail") or "",
         }
 
-    except Exception as e:
-        print(f"❌ TikTok error for @{username}: {e}")
+    except Exception:
+        print(f"⏩ Skipped TikTok: @{username} is unavailable")
         return None
 
 def send_discord_soundcloud(track):
