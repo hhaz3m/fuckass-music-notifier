@@ -67,13 +67,14 @@ SPOTIFY_USERS = [
     # archive5077 sadly doesnt exist on spotify :(
 ]
 TIKTOK_USERS = [
-    "asteriasdeath", ## i dont even need to list who is who its already in the u/n
+    "asteriasdeath", # i dont even need to list who is who its already in the u/n
     "an4rch82108363974",
     "lytramusic",
     "vyzer.mp3",
     "kets4eki",
     "kets4eki6251726",
-    "superswagboi2005", ## kets4eki 3rd acc
+    "superswagboi2005", # kets4eki 3rd acc
+    "veryswagboy2005", # kets4eki 4th acc
     "d3rcore",
     "6arelyhuman",
 ##  "@anarchistsanctuary",
