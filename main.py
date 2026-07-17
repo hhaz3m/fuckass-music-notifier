@@ -78,7 +78,8 @@ TIKTOK_USERS = [
     "d3rcore",
     "6arelyhuman",
 ##  "@anarchistsanctuary",
-    "archive5077"
+    "archive5077",
+    "www.heyselcuk.com"
 ]
 
 SOUNDCLOUD_WEBHOOK = os.environ.get("scDCWH")
