@@ -445,11 +445,11 @@ def send_discord_soundcloud(track):
     try:
         r = requests.post(SOUNDCLOUD_WEBHOOK, json=payload, timeout=5)
         if r.ok:
-            print(f"✅ Sent: {track['artist']} — {track['title']}")
+            print(f"✅ Sent SC: {track['artist']} — {track['title']}")
         else:
-            print(f"❌ Failed webhook: {r.status_code} {r.text}")
+            print(f"❌ Failed SC webhook: {r.status_code} {r.text}")
     except Exception as e:
-        print(f"❌ Error sending webhook: {e}")
+        print(f"❌ Error sending SC webhook: {e}")
 
 def send_youtube_discord(video):
     if not YT_WEBHOOK:
@@ -507,7 +507,9 @@ def send_spotify_discord(release):
 
     try:
         r = requests.post(SPOTIFY_WEBHOOK, json=payload, timeout=5)
-        if not r.ok:
+        if r.ok:
+            print(f"✅ Sent Spotify: {release['artist']} — {release['title']}")
+        else:
             print(f"❌ Failed Spotify webhook: {r.status_code} {r.text}")
     except Exception as e:
         print(f"❌ Error sending Spotify webhook: {e}")
@@ -537,12 +539,12 @@ def send_tiktok_discord(video):
             },
             timeout=10,
         )
-        if not r.ok:
+        if r.ok:
+            print(f"✅ Sent Tiktok: {video['artist']} — new TikTok")
+        else:
             print(f"❌ Failed TikTok webhook: {r.status_code} {r.text}")
-        return r.ok
     except Exception as e:
         print(f"❌ Error sending TikTok webhook: {e}")
-        return False
 
 def send_apple_music_discord(release):
     if not APPLE_MUSIC_WEBHOOK:
@@ -571,11 +573,14 @@ def send_apple_music_discord(release):
         }
     }
 
-    requests.post(
-        APPLE_MUSIC_WEBHOOK,
-        json=payload,
-        timeout=5
-    )
+    try:
+        r = requests.post(APPLE_MUSIC_WEBHOOK, json=payload, timeout=5)
+        if r.ok:
+            print(f"✅ Sent Apple Music: {release['artist']} — {release['title']}")
+        else:
+            print(f"❌ Failed Apple Music webhook: {r.status_code} {r.text}")
+    except Exception as e:
+        print(f"❌ Error sending Apple Music webhook: {e}")
 
 def send_amazon_music_discord(release):
     if not AMAZON_MUSIC_WEBHOOK:
@@ -608,16 +613,13 @@ def send_amazon_music_discord(release):
     }
 
     try:
-        r = requests.post(
-            AMAZON_MUSIC_WEBHOOK,
-            json=payload,
-            timeout=5
-        )
-
-        return r.ok
-
-    except Exception:
-        return False
+        r = requests.post(SOUNDCLOUD_WEBHOOK, json=payload, timeout=5)
+        if r.ok:
+            print(f"✅ Sent Amazon Music: {release['artist']} — {release['title']}")
+        else:
+            print(f"❌ Failed Amazon Music webhook: {r.status_code} {r.text}")
+    except Exception as e:
+        print(f"❌ Error sending Amazon Music webhook: {e}")
 
 def notify_all_soundcloud():
     global cache
@@ -1020,6 +1022,11 @@ def send_aplm():
     notify_all_apple_music()
     return jsonify({"status": "sent"}), 200
 
+@app.route("/sendamzm")
+def send_amzm():
+    notify_all_amazon_music()
+    return jsonify({"status": "sent"}), 200
+
 @app.route("/sendall")
 def send_all():
     notify_all_soundcloud()
@@ -1027,6 +1034,7 @@ def send_all():
     # notify_all_spotify()
     notify_all_tiktok()
     notify_all_apple_music()
+    notify_all_amazon_music()
     return jsonify({"status": "sent"}), 200
 
 # =====================
@@ -1044,6 +1052,8 @@ def auto_notify_loop():
         notify_all_tiktok()
         print("🔁 Checking Apple Music feeds...")
         notify_all_apple_music()
+         print("🔁 Checking Amazon Music feeds...")
+        notify_all_amazon_music()
         time.sleep(90)  # every 1.5 minutes (1m 30s /// 90 seconds)
 
 # =====================
@@ -1055,5 +1065,6 @@ if __name__ == "__main__":
     # notify_all_spotify()
     notify_all_tiktok()
     notify_all_apple_music()
+    notify_all_amazon_music()
     threading.Thread(target=auto_notify_loop, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
