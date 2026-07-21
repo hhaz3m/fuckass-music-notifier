@@ -613,7 +613,7 @@ def send_amazon_music_discord(release):
     }
 
     try:
-        r = requests.post(SOUNDCLOUD_WEBHOOK, json=payload, timeout=5)
+        r = requests.post(AMAZON_MUSIC_WEBHOOK, json=payload, timeout=5)
         if r.ok:
             print(f"✅ Sent Amazon Music: {release['artist']} — {release['title']}")
         else:
