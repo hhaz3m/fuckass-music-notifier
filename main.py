@@ -96,25 +96,25 @@ APPLE_MUSIC_USERS = [
     "Anarchist Sanctuary"
 ]
 
-AMAZON_MUSIC_USERS = [
-    "asteria",
-    "an4rch",
-    "Lytra",
-    "Vyzer",
-    "kets4eki",
-    "kets2eki",
-    "d3r",
-    "d3r archive",
-    "6arelyhuman",
-    "Anarchist Sanctuary"
-]
+# AMAZON_MUSIC_USERS = [
+#     "asteria",
+#     "an4rch",
+#     "Lytra",
+#     "Vyzer",
+#     "kets4eki",
+#     "kets2eki",
+#     "d3r",
+#     "d3r archive",
+#     "6arelyhuman",
+#     "Anarchist Sanctuary"
+# ]
 
 SOUNDCLOUD_WEBHOOK = os.environ.get("scDCWH")
 YT_WEBHOOK = os.environ.get("ytDCWH")
 SPOTIFY_WEBHOOK = os.environ.get("spDCWH")
 TIKTOK_WEBHOOK = os.environ.get("ttDCWH")
 APPLE_MUSIC_WEBHOOK = os.environ.get("aplmDCWH")
-AMAZON_MUSIC_WEBHOOK = os.environ.get("amzmDCWH")
+# AMAZON_MUSIC_WEBHOOK = os.environ.get("amzmDCWH")
 SPOTIFY_CID = os.environ.get("spCIDKEYA")
 SPOTIFY_CSC = os.environ.get("spCSCASDA")
 UPTIMEROBOT_API_KEY = os.environ.get("uptrapik")
@@ -354,76 +354,76 @@ def get_latest_apple_music_release(artist):
         print(f"❌ Apple Music error ({artist}): {e}")
         return None
 
-def get_amazon_music_link(artist, title):
-    query = quote(f"{artist} {title}")
-    return f"https://music.amazon.com/search/{query}"
+# def get_amazon_music_link(artist, title):
+  #  query = quote(f"{artist} {title}")
+   # return f"https://music.amazon.com/search/{query}"
 
-def get_latest_musicbrainz_release(artist_name):
-    try:
-        headers = {
-            "User-Agent": "fmn-music-notifier/1.0 (your-email@example.com)"
-        }
+#def get_latest_musicbrainz_release(artist_name):
+ #   try:
+  #      headers = {
+   #         "User-Agent": "fmn-music-notifier/1.0 (your-email@example.com)"
+    #    }
 
         # Find artist ID
-        search = requests.get(
-            "https://musicbrainz.org/ws/2/artist",
-            params={
-                "query": f'artist:"{artist_name}"',
-                "fmt": "json"
-            },
-            headers=headers,
-            timeout=10
-        )
+     #   search = requests.get(
+      #      "https://musicbrainz.org/ws/2/artist",
+       #     params={
+        #        "query": f'artist:"{artist_name}"',
+         #       "fmt": "json"
+          #  },
+           # headers=headers,
+            #timeout=10
+       # )
 
-        search.raise_for_status()
+        #search.raise_for_status()
 
-        artists = search.json().get("artists", [])
+        #artists = search.json().get("artists", [])
 
-        if not artists:
-            print(f"❌ MusicBrainz: artist not found {artist_name}")
-            return None
+        #if not artists:
+         #   print(f"❌ MusicBrainz: artist not found {artist_name}")
+          #  return None
 
-        artist_id = artists[0]["id"]
+        #artist_id = artists[0]["id"]
 
         # Get releases
-        releases = requests.get(
-            "https://musicbrainz.org/ws/2/release-group",
-            params={
-                "artist": artist_id,
-                "type": "album|single|ep",
-                "fmt": "json",
-                "limit": 10
-            },
-            headers=headers,
-            timeout=10
-        )
+        #releases = requests.get(
+         #   "https://musicbrainz.org/ws/2/release-group",
+          #  params={
+           #     "artist": artist_id,
+            #    "type": "album|single|ep",
+             #   "fmt": "json",
+              #  "limit": 10
+            #},
+           # headers=headers,
+            #timeout=10
+      #  )
 
-        releases.raise_for_status()
+       # releases.raise_for_status()
 
-        groups = releases.json().get("release-groups", [])
+        #groups = releases.json().get("release-groups", [])
 
-        if not groups:
-            print(f"❌ MusicBrainz: no releases for {artist_name}")
-            return None
+        #if not groups:
+         #   print(f"❌ MusicBrainz: no releases for {artist_name}")
+          #  return None
 
         # Sort newest first
-        groups.sort(
-            key=lambda x: x.get("first-release-date", "0000"),
-            reverse=True
-        )
+        #groups.sort(
+         #   key=lambda x: x.get("first-release-date", "0000"),
+          #  reverse=True
+        #)
 
-        latest = groups[0]
+        #latest = groups[0]
 
-        return {
-            "id": latest["id"],
-            "title": latest["title"],
-            "artist": artist_name,
-            "image": "",
-        }
+        #return {
+         #   "id": latest["id"],
+         #   "title": latest["title"],
+          #  "artist": artist_name,
+           # "image": "",
+        #}
 
-    except Exception as e:
-        print(f"❌ MusicBrainz error ({artist_name}): {e}")
-        return None
+   # except Exception as e:
+      #  print(f"❌ MusicBrainz error ({artist_name}): {e}")
+      #  return None
     
 def send_discord_soundcloud(track):
     if not SOUNDCLOUD_WEBHOOK:
@@ -541,10 +541,13 @@ def send_tiktok_discord(video):
         )
         if r.ok:
             print(f"✅ Sent TikTok: {video['artist']} — new TikTok")
+            return True
         else:
             print(f"❌ Failed TikTok webhook: {r.status_code} {r.text}")
+            return False
     except Exception as e:
         print(f"❌ Error sending TikTok webhook: {e}")
+        return False
 
 def send_apple_music_discord(release):
     if not APPLE_MUSIC_WEBHOOK:
@@ -582,44 +585,44 @@ def send_apple_music_discord(release):
     except Exception as e:
         print(f"❌ Error sending Apple Music webhook: {e}")
 
-def send_amazon_music_discord(release):
-    if not AMAZON_MUSIC_WEBHOOK:
-        return False
+#def send_amazon_music_discord(release):
+#    if not AMAZON_MUSIC_WEBHOOK:
+ #       return False
 
-    embed = {
-        "title": release["title"],
-        "url": release["link"],
-        "color": 0x00A8E1,
-        "author": {
-            "name": release["artist"],
-            "url": release["link"]
-        },
-        "footer": {
-            "text": "Amazon Music • New Release 🎵"
-        }
-    }
+  #  embed = {
+   #     "title": release["title"],
+    #    "url": release["link"],
+     #   "color": 0x00A8E1,
+      #  "author": {
+       #     "name": release["artist"],
+        #    "url": release["link"]
+        #},
+        #"footer": {
+         #   "text": "Amazon Music • New Release 🎵"
+        #}
+    #}
 
-    if release.get("image"):
-        embed["image"] = {
-            "url": release["image"]
-        }
+    #if release.get("image"):
+     #   embed["image"] = {
+      #      "url": release["image"]
+       # }
 
-    payload = {
-        "content": f"{release['artist']} — {release['title']} @everyone",
-        "embeds": [embed],
-        "allowed_mentions": {
-            "parse": ["everyone"]
-        }
-    }
+    #payload = {
+     #   "content": f"{release['artist']} — {release['title']} @everyone",
+      #  "embeds": [embed],
+       # "allowed_mentions": {
+        #    "parse": ["everyone"]
+        #}
+    #}
 
-    try:
-        r = requests.post(AMAZON_MUSIC_WEBHOOK, json=payload, timeout=5)
-        if r.ok:
-            print(f"✅ Sent Amazon Music: {release['artist']} — {release['title']}")
-        else:
-            print(f"❌ Failed Amazon Music webhook: {r.status_code} {r.text}")
-    except Exception as e:
-        print(f"❌ Error sending Amazon Music webhook: {e}")
+    #try:
+     #   r = requests.post(AMAZON_MUSIC_WEBHOOK, json=payload, timeout=5)
+      #  if r.ok:
+       #     print(f"✅ Sent Amazon Music: {release['artist']} — {release['title']}")
+        #else:
+         #   print(f"❌ Failed Amazon Music webhook: {r.status_code} {r.text}")
+   # except Exception as e:
+    #    print(f"❌ Error sending Amazon Music webhook: {e}")
 
 def notify_all_soundcloud():
     global cache
@@ -735,35 +738,35 @@ def notify_all_apple_music():
     if updated:
         save_cache(cache)
 
-def notify_all_amazon_music():
-    global cache
-    updated = False
+#def notify_all_amazon_music():
+ #   global cache
+  #  updated = False
 
-    for artist in AMAZON_MUSIC_USERS:
-        release = get_latest_musicbrainz_release(artist)
+   # for artist in AMAZON_MUSIC_USERS:
+    #    release = get_latest_musicbrainz_release(artist)
 
-        if not release:
-            continue
+     #   if not release:
+      #      continue
 
-        release["link"] = get_amazon_music_link(
-            release["artist"],
-            release["title"]
-        )
+       # release["link"] = get_amazon_music_link(
+        #    release["artist"],
+         #   release["title"]
+        #)
 
-        key = f"amazon_{artist}"
+        #key = f"amazon_{artist}"
 
-        if cache.get(key) == release["id"]:
-            print(
-                f"⏩ Skipped Amazon Music: {release['artist']} — {release['title']}"
-            )
-            continue
+        #if cache.get(key) == release["id"]:
+         #   print(
+          #      f"⏩ Skipped Amazon Music: {release['artist']} — {release['title']}"
+            #)
+            #continue
 
-        if send_amazon_music_discord(release):
-            cache[key] = release["id"]
-            updated = True
+        #if send_amazon_music_discord(release):
+         #   cache[key] = release["id"]
+          #  updated = True
 
-    if updated:
-        save_cache(cache)
+   # if updated:
+    #    save_cache(cache)
         
 # =====================
 # FLASK SERVER
