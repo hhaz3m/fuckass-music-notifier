@@ -200,14 +200,14 @@ def get_spotify_token():
 
     r.raise_for_status()
 
-    return r.json()["access_token"]
+    token = r.json()["access_token"]
+    print("TOKEN:", token[:30])
+    return token
         
 def get_latest_spotify_release(artist_id, token):
     r = requests.get(
         f"https://api.spotify.com/v1/artists/{artist_id}/albums",
-        headers={
-            "Authorization": f"Bearer {token}"
-        },
+        headers={"Authorization": f"Bearer {token}"},
         params={
             "include_groups": "album,single",
             "market": "US",
@@ -215,6 +215,9 @@ def get_latest_spotify_release(artist_id, token):
         },
         timeout=10
     )
+
+    print("STATUS:", r.status_code)
+    print("BODY:", r.text)
 
     r.raise_for_status()
 
@@ -224,7 +227,6 @@ def get_latest_spotify_release(artist_id, token):
         return None
 
     albums.sort(key=lambda x: x["release_date"], reverse=True)
-
     latest = albums[0]
 
     return {
@@ -232,7 +234,7 @@ def get_latest_spotify_release(artist_id, token):
         "title": latest["name"],
         "artist": latest["artists"][0]["name"],
         "image": latest["images"][0]["url"] if latest["images"] else "",
-        "link": latest["external_urls"]["spotify"]
+        "link": latest["external_urls"]["spotify"],
     }
     
 def get_latest_tiktok_video(username):
