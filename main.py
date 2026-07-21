@@ -92,9 +92,6 @@ UPTIMEROBOT_API_KEY = os.environ.get("uptrapik")
 PORT = int(os.environ.get("PORT", 8080))
 CACHE_FILE = "last_sent.json"
 
-print("CID:", bool(SPOTIFY_CID))
-print("CSC:", bool(SPOTIFY_CSC))
-
 # =====================
 # CACHE HANDLING
 # =====================
@@ -173,11 +170,8 @@ def get_latest_youtube_video(feed_url):
         return None
 
 def get_spotify_token():
-    if not SPOTIFY_CID:
-        raise Exception("SPOTIFY_CID missing")
-
-    if not SPOTIFY_CSC:
-        raise Exception("SPOTIFY_CSC missing")
+    if not SPOTIFY_CID or not SPOTIFY_CSC:
+        raise Exception("Missing Spotify credentials in env vars")
 
     auth = base64.b64encode(
         f"{SPOTIFY_CID}:{SPOTIFY_CSC}".encode()
@@ -191,18 +185,18 @@ def get_spotify_token():
         },
         data={
             "grant_type": "client_credentials"
-        },
-        timeout=10
+        }
     )
 
-    print("Spotify auth:", r.status_code)
-    print(r.text)
+    if not r.ok:
+        print("Spotify token error:", r.status_code, r.text)
+        raise Exception("Spotify auth failed")
 
-    r.raise_for_status()
-
-    token = r.json()["access_token"]
-    print("TOKEN:", token[:30])
-    return token
+    try:
+        return r.json()["access_token"]
+    except Exception:
+        print("Bad response:", r.text)
+        raise
         
 def get_latest_spotify_release(artist_id, token):
     r = requests.get(
@@ -210,33 +204,40 @@ def get_latest_spotify_release(artist_id, token):
         headers={"Authorization": f"Bearer {token}"},
         params={
             "include_groups": "album,single",
-            "market": "US",
-            "limit": 50
+            "limit": 1,
+            "market": "US"
         },
         timeout=10
     )
 
-    print("STATUS:", r.status_code)
-    print("BODY:", r.text)
-
-    r.raise_for_status()
-
-    albums = r.json()["items"]
-
-    if not albums:
+    if not r.ok:
+        print("Spotify release error:", r.status_code, r.text)
         return None
 
-    albums.sort(key=lambda x: x["release_date"], reverse=True)
-    latest = albums[0]
+    items = r.json().get("items", [])
+    if not items:
+        return None
+
+    album = items[0]
+    images = album.get("images") or []
 
     return {
-        "id": latest["id"],
-        "title": latest["name"],
-        "artist": latest["artists"][0]["name"],
-        "image": latest["images"][0]["url"] if latest["images"] else "",
-        "link": latest["external_urls"]["spotify"],
+        "id": album["id"],
+        "title": album["name"],
+        "artist": album["artists"][0]["name"],
+        "image": images[0]["url"] if images else "",
+        "link": album["external_urls"]["spotify"]
     }
-    
+
+class SilentYTDLPLogger:
+    def debug(self, msg):
+        pass
+
+    def warning(self, msg):
+        pass
+
+    def error(self, msg):
+        pass
 def get_latest_tiktok_video(username):
     username = username.lstrip("@")
 
@@ -736,8 +737,8 @@ def send_yt():
 
 @app.route("/sendsp")
 def send_sp():
-    notify_all_spotify()
-    return jsonify({"text": "sent"}), 200
+   # notify_all_spotify()
+    return jsonify({"text":"im so sorry i dont have premium so its not gon work chat"}), 404
 @app.route("/sendtt")
 def send_tt():
     notify_all_tiktok()
@@ -747,7 +748,7 @@ def send_tt():
 def send_all():
     notify_all_feeds()
     notify_all_youtube()
-    notify_all_spotify()
+    # notify_all_spotify()
     notify_all_tiktok()
     return jsonify({"status": "sent"}), 200
 
@@ -760,8 +761,8 @@ def auto_notify_loop():
         notify_all_feeds()
         print("🔁 Checking YouTube feeds...")
         notify_all_youtube()
-        print("🔁 Checking Spotify releases...")
-        notify_all_spotify()
+       # print("🔁 Checking Spotify releases...")
+       # notify_all_spotify()
         print("🔁 Checking TikTok feeds...")
         notify_all_tiktok()
         time.sleep(90)  # every 1.5 minutes (1m 30s /// 90 seconds)
@@ -772,7 +773,7 @@ def auto_notify_loop():
 if __name__ == "__main__":
     notify_all_feeds()
     notify_all_youtube()
-    notify_all_spotify()
+    # notify_all_spotify()
     notify_all_tiktok()
     threading.Thread(target=auto_notify_loop, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
