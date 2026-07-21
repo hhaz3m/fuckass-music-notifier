@@ -540,7 +540,7 @@ def send_tiktok_discord(video):
             timeout=10,
         )
         if r.ok:
-            print(f"✅ Sent Tiktok: {video['artist']} — new TikTok")
+            print(f"✅ Sent TikTok: {video['artist']} — new TikTok")
         else:
             print(f"❌ Failed TikTok webhook: {r.status_code} {r.text}")
     except Exception as e:
@@ -754,7 +754,7 @@ def notify_all_amazon_music():
 
         if cache.get(key) == release["id"]:
             print(
-                f"⏩ Skipped Amazon: {release['artist']} — {release['title']}"
+                f"⏩ Skipped Amazon Music: {release['artist']} — {release['title']}"
             )
             continue
 
@@ -1019,13 +1019,13 @@ def send_tt():
 
 @app.route("/sendaplm")
 def send_aplm():
-    notify_all_apple_music()
-    return jsonify({"status": "sent"}), 200
+   # notify_all_apple_music()
+    return jsonify({"status": "not sent"}), 403
 
 @app.route("/sendamzm")
 def send_amzm():
-    notify_all_amazon_music()
-    return jsonify({"status": "sent"}), 200
+   # notify_all_amazon_music()
+    return jsonify({"status": "not sent"}), 403
 
 @app.route("/sendall")
 def send_all():
@@ -1033,8 +1033,8 @@ def send_all():
     notify_all_youtube()
     # notify_all_spotify()
     notify_all_tiktok()
-    notify_all_apple_music()
-    notify_all_amazon_music()
+   # notify_all_apple_music()
+   # notify_all_amazon_music()
     return jsonify({"status": "sent"}), 200
 
 # =====================
@@ -1050,10 +1050,10 @@ def auto_notify_loop():
        # notify_all_spotify()
         print("🔁 Checking TikTok feeds...")
         notify_all_tiktok()
-        print("🔁 Checking Apple Music feeds...")
-        notify_all_apple_music()
-        print("🔁 Checking Amazon Music feeds...")
-        notify_all_amazon_music()
+       # print("🔁 Checking Apple Music feeds...")
+       # notify_all_apple_music()
+       # print("🔁 Checking Amazon Music feeds...")
+       # notify_all_amazon_music()
         time.sleep(90)  # every 1.5 minutes (1m 30s /// 90 seconds)
 
 # =====================
@@ -1064,7 +1064,7 @@ if __name__ == "__main__":
     notify_all_youtube()
     # notify_all_spotify()
     notify_all_tiktok()
-    notify_all_apple_music()
-    notify_all_amazon_music()
+   # notify_all_apple_music()
+   # notify_all_amazon_music()
     threading.Thread(target=auto_notify_loop, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
