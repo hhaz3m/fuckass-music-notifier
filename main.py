@@ -1052,7 +1052,7 @@ def auto_notify_loop():
         notify_all_tiktok()
         print("🔁 Checking Apple Music feeds...")
         notify_all_apple_music()
-         print("🔁 Checking Amazon Music feeds...")
+        print("🔁 Checking Amazon Music feeds...")
         notify_all_amazon_music()
         time.sleep(90)  # every 1.5 minutes (1m 30s /// 90 seconds)
 
