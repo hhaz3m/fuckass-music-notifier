@@ -3,6 +3,7 @@ import threading, time, json, os
 import xml.etree.ElementTree as ET
 from flask import Flask, jsonify
 from yt_dlp import YoutubeDL
+from urllib.parse import quote
 import uuid
 import base64
 INSTANCE_ID = str(uuid.uuid4())
@@ -82,10 +83,38 @@ TIKTOK_USERS = [
     "www.heyselcuk.com"
 ]
 
+APPLE_MUSIC_USERS = [
+    "asteria",
+    "an4rch",
+    "Lytra",
+    "Vyzer",
+    "kets4eki",
+    "kets2eki",
+    "d3r",
+    "d3r archive",
+    "6arelyhuman",
+    "Anarchist Sanctuary"
+]
+
+AMAZON_MUSIC_USERS = [
+    "asteria",
+    "an4rch",
+    "Lytra",
+    "Vyzer",
+    "kets4eki",
+    "kets2eki",
+    "d3r",
+    "d3r archive",
+    "6arelyhuman",
+    "Anarchist Sanctuary"
+]
+
 SOUNDCLOUD_WEBHOOK = os.environ.get("scDCWH")
 YT_WEBHOOK = os.environ.get("ytDCWH")
 SPOTIFY_WEBHOOK = os.environ.get("spDCWH")
 TIKTOK_WEBHOOK = os.environ.get("ttDCWH")
+APPLE_MUSIC_WEBHOOK = os.environ.get("aplmDCWH")
+AMAZON_MUSIC_WEBHOOK = os.environ.get("amzmDCWH")
 SPOTIFY_CID = os.environ.get("spCIDKEYA")
 SPOTIFY_CSC = os.environ.get("spCSCASDA")
 UPTIMEROBOT_API_KEY = os.environ.get("uptrapik")
@@ -282,6 +311,120 @@ def get_latest_tiktok_video(username):
         print(f"⏩ Skipped TikTok: @{username} is unavailable")
         return None
 
+def get_latest_apple_music_release(artist):
+    try:
+        r = requests.get(
+            "https://itunes.apple.com/search",
+            params={
+                "term": artist,
+                "entity": "album",
+                "limit": 5
+            },
+            timeout=10
+        )
+
+        r.raise_for_status()
+
+        data = r.json()
+        results = data.get("results", [])
+
+        if not results:
+            return None
+
+        # newest album
+        results.sort(
+            key=lambda x: x.get("releaseDate", ""),
+            reverse=True
+        )
+
+        album = results[0]
+
+        return {
+            "id": album["collectionId"],
+            "title": album["collectionName"],
+            "artist": album["artistName"],
+            "image": album["artworkUrl100"].replace(
+                "100x100",
+                "1000x1000"
+            ),
+            "link": album["collectionViewUrl"]
+        }
+
+    except Exception as e:
+        print(f"❌ Apple Music error ({artist}): {e}")
+        return None
+
+def get_amazon_music_link(artist, title):
+    query = quote(f"{artist} {title}")
+    return f"https://music.amazon.com/search/{query}"
+
+def get_latest_musicbrainz_release(artist_name):
+    try:
+        headers = {
+            "User-Agent": "fmn-music-notifier/1.0 (your-email@example.com)"
+        }
+
+        # Find artist ID
+        search = requests.get(
+            "https://musicbrainz.org/ws/2/artist",
+            params={
+                "query": f'artist:"{artist_name}"',
+                "fmt": "json"
+            },
+            headers=headers,
+            timeout=10
+        )
+
+        search.raise_for_status()
+
+        artists = search.json().get("artists", [])
+
+        if not artists:
+            print(f"❌ MusicBrainz: artist not found {artist_name}")
+            return None
+
+        artist_id = artists[0]["id"]
+
+        # Get releases
+        releases = requests.get(
+            "https://musicbrainz.org/ws/2/release-group",
+            params={
+                "artist": artist_id,
+                "type": "album|single|ep",
+                "fmt": "json",
+                "limit": 10
+            },
+            headers=headers,
+            timeout=10
+        )
+
+        releases.raise_for_status()
+
+        groups = releases.json().get("release-groups", [])
+
+        if not groups:
+            print(f"❌ MusicBrainz: no releases for {artist_name}")
+            return None
+
+        # Sort newest first
+        groups.sort(
+            key=lambda x: x.get("first-release-date", "0000"),
+            reverse=True
+        )
+
+        latest = groups[0]
+
+        return {
+            "id": latest["id"],
+            "title": latest["title"],
+            "artist": artist_name,
+            "image": "",
+        }
+
+    except Exception as e:
+        print(f"❌ MusicBrainz error ({artist_name}): {e}")
+        return None
+    
 def send_discord_soundcloud(track):
     if not SOUNDCLOUD_WEBHOOK:
         print("Missing SoundCloud webhook")
@@ -401,8 +544,82 @@ def send_tiktok_discord(video):
         print(f"❌ Error sending TikTok webhook: {e}")
         return False
 
+def send_apple_music_discord(release):
+    if not APPLE_MUSIC_WEBHOOK:
+        print("Missing Apple Music webhook")
+        return
 
-def notify_all_feeds():
+    payload = {
+        "content": f"{release['artist']} — {release['title']} @everyone",
+        "embeds": [{
+            "title": release["title"],
+            "url": release["link"],
+            "color": 0xfa243c,
+            "author": {
+                "name": release["artist"],
+                "url": release["link"]
+            },
+            "image": {
+                "url": release["image"]
+            },
+            "footer": {
+                "text": "Apple Music • New Release 🍎"
+            }
+        }],
+        "allowed_mentions": {
+            "parse": ["everyone"]
+        }
+    }
+
+    requests.post(
+        APPLE_MUSIC_WEBHOOK,
+        json=payload,
+        timeout=5
+    )
+
+def send_amazon_music_discord(release):
+    if not AMAZON_MUSIC_WEBHOOK:
+        return False
+
+    embed = {
+        "title": release["title"],
+        "url": release["link"],
+        "color": 0x00A8E1,
+        "author": {
+            "name": release["artist"],
+            "url": release["link"]
+        },
+        "footer": {
+            "text": "Amazon Music • New Release 🎵"
+        }
+    }
+
+    if release.get("image"):
+        embed["image"] = {
+            "url": release["image"]
+        }
+
+    payload = {
+        "content": f"{release['artist']} — {release['title']} @everyone",
+        "embeds": [embed],
+        "allowed_mentions": {
+            "parse": ["everyone"]
+        }
+    }
+
+    try:
+        r = requests.post(
+            AMAZON_MUSIC_WEBHOOK,
+            json=payload,
+            timeout=5
+        )
+
+        return r.ok
+
+    except Exception:
+        return False
+
+def notify_all_soundcloud():
     global cache
     updated = False
 
@@ -492,6 +709,60 @@ def notify_all_tiktok():
     if updated:
         save_cache(cache)
 
+def notify_all_apple_music():
+    global cache
+    updated = False
+
+    for artist in APPLE_MUSIC_USERS:
+        release = get_latest_apple_music_release(artist)
+
+        if not release:
+            continue
+
+        key = f"apple_{artist}"
+
+        if cache.get(key) == release["id"]:
+            print(f"⏩ Skipped Apple Music: {artist}")
+            continue
+
+        send_apple_music_discord(release)
+
+        cache[key] = release["id"]
+        updated = True
+
+    if updated:
+        save_cache(cache)
+
+def notify_all_amazon_music():
+    global cache
+    updated = False
+
+    for artist in AMAZON_MUSIC_USERS:
+        release = get_latest_musicbrainz_release(artist)
+
+        if not release:
+            continue
+
+        release["link"] = get_amazon_music_link(
+            release["artist"],
+            release["title"]
+        )
+
+        key = f"amazon_{artist}"
+
+        if cache.get(key) == release["id"]:
+            print(
+                f"⏩ Skipped Amazon: {release['artist']} — {release['title']}"
+            )
+            continue
+
+        if send_amazon_music_discord(release):
+            cache[key] = release["id"]
+            updated = True
+
+    if updated:
+        save_cache(cache)
+        
 # =====================
 # FLASK SERVER
 # =====================
@@ -727,7 +998,7 @@ def healthz():
 
 @app.route("/sendsc")
 def send_sc():
-    notify_all_feeds()
+    notify_all_soundcloud()
     return jsonify({"status": "sent"}), 200
 
 @app.route("/sendyt")
@@ -744,12 +1015,18 @@ def send_tt():
     notify_all_tiktok()
     return jsonify({"status": "sent"}), 200
 
+@app.route("/sendaplm")
+def send_aplm():
+    notify_all_apple_music()
+    return jsonify({"status": "sent"}), 200
+
 @app.route("/sendall")
 def send_all():
-    notify_all_feeds()
+    notify_all_soundcloud()
     notify_all_youtube()
     # notify_all_spotify()
     notify_all_tiktok()
+    notify_all_apple_music()
     return jsonify({"status": "sent"}), 200
 
 # =====================
@@ -758,22 +1035,25 @@ def send_all():
 def auto_notify_loop():
     while True:
         print("🔁 Checking SoundCloud feeds...")
-        notify_all_feeds()
+        notify_all_soundcloud()
         print("🔁 Checking YouTube feeds...")
         notify_all_youtube()
        # print("🔁 Checking Spotify releases...")
        # notify_all_spotify()
         print("🔁 Checking TikTok feeds...")
         notify_all_tiktok()
+        print("🔁 Checking Apple Music feeds...")
+        notify_all_apple_music()
         time.sleep(90)  # every 1.5 minutes (1m 30s /// 90 seconds)
 
 # =====================
 # RUN
 # =====================
 if __name__ == "__main__":
-    notify_all_feeds()
+    notify_all_soundcloud()
     notify_all_youtube()
     # notify_all_spotify()
     notify_all_tiktok()
+    notify_all_apple_music()
     threading.Thread(target=auto_notify_loop, daemon=True).start()
     app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
